@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      - REC_REDIS_URL=redis://redis:6379/0
+      - REC_DEBUG=false
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: dev
+    ports:
+      - "8001:8000"
+    environment:
+      - REC_DEBUG=true
+    volumes:
+      - ..:/app
+    profiles:
+      - dev
+
+volumes:
+  redis_data:
