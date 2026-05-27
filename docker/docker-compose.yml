@@ -1,4 +1,4 @@
-version: "3.9"
+name: realtime-recommendation-engine
 
 services:
   api:
@@ -7,18 +7,23 @@ services:
       dockerfile: docker/Dockerfile
       target: production
     ports:
-      - "8000:8000"
+      # Host 8220 -> container 8000. Distinct from llm-guardrails-safety (8100)
+      # and ml-monitoring-dashboard (8210) so the stacks do not collide.
+      - "8220:8000"
     environment:
       - REC_REDIS_URL=redis://redis:6379/0
       - REC_DEBUG=false
+      - REC_SEED_DEMO_DATA=true
     depends_on:
       - redis
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    # No host port published: the app reaches Redis on the internal network, and
+    # publishing 6379 would collide with other local Redis containers.
+    expose:
+      - "6379"
     volumes:
       - redis_data:/data
 
@@ -28,7 +33,7 @@ services:
       dockerfile: docker/Dockerfile
       target: dev
     ports:
-      - "8001:8000"
+      - "8221:8000"
     environment:
       - REC_DEBUG=true
     volumes:

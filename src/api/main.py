@@ -73,10 +73,38 @@ def _fit_models() -> None:
     logger.info("models_fitted", n_users=store.n_users, n_items=store.n_items)
 
 
+def _seed_demo_data() -> None:
+    """Populate an empty store with a synthetic dataset for the demo.
+
+    Only runs when SEED_DEMO_DATA is set and the store is empty, so it never
+    overwrites real data. Tests bypass the lifespan, so this does not affect them.
+    """
+    from src.data.generator import generate_dataset
+
+    settings = get_settings()
+    demo = generate_dataset(
+        n_users=settings.DEMO_USERS,
+        n_items=settings.DEMO_ITEMS,
+        n_interactions=settings.DEMO_INTERACTIONS,
+        seed=42,
+    )
+    store.add_users_batch(demo.list_users())
+    store.add_items_batch(demo.list_items())
+    store.add_interactions_batch(demo.get_all_interactions())
+    logger.info(
+        "seeded_demo_data",
+        n_users=store.n_users,
+        n_items=store.n_items,
+        n_interactions=store.n_interactions,
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_settings()
     logger.info("starting", host=settings.API_HOST, port=settings.API_PORT)
+    if settings.SEED_DEMO_DATA and store.n_users == 0:
+        _seed_demo_data()
     _fit_models()
     yield
     logger.info("shutting_down")

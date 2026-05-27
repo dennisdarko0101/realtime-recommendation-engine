@@ -8,7 +8,9 @@ build/
 .venv/
 venv/
 .env
-data/
+# Anchored to the repo root so it ignores the generated ./data/ directory only,
+# not the src/data/ source package (which an unanchored "data/" would swallow).
+/data/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/

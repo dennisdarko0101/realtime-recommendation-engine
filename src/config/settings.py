@@ -43,6 +43,13 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api/v1"
     DEBUG: bool = False
 
+    # Demo: when true and the store is empty at startup, seed a synthetic
+    # dataset so the recommendation endpoints return results out of the box.
+    SEED_DEMO_DATA: bool = True
+    DEMO_USERS: int = 200
+    DEMO_ITEMS: int = 80
+    DEMO_INTERACTIONS: int = 4000
+
 
 @lru_cache
 def get_settings() -> Settings:
